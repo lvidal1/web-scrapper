@@ -1,19 +1,36 @@
 import requests
 from bs4 import BeautifulSoup
+import csv
 
-URL = "https://platanitos.com/catalogo?breadcrumbs[]=Moda%20-%20mujeres%20%3E%20Zapatos%20%3E%20Sandalias&sort=timestamp_active+desc"
+URL = "https://www.memorykings.pe/resultados/rtx"
 page = requests.get(URL)
 
 soup = BeautifulSoup(page.content, "html.parser")
+catalog = soup.find("ul", class_="products")
+products = catalog.find_all("li")
 
-catalog = soup.find("div", class_="container-catalog-responsive")
-products = catalog.find_all("div", class_="nd-ct__item")
+
+def format_price(raw_price):
+    return raw_price.split("ó")[1].replace("S/", "").strip()
+
+
+f = open('./data-memory-kings.csv', 'w')
+writer = csv.writer(f)
 
 for product in products:
-    image_element = product.find("img", class_="swiper-lazy nd-ct__img")
-    title_element = product.find("p", class_="nd-ct__item-title")
-    prices_element = product.find("p", class_="nd-ct__item-prices")
-    price_element = prices_element.find("label")
-    print(title_element.text.strip())
-    print(image_element['src'])
-    print(price_element.text.strip())
+    link_element = product.find('a')
+    image_element = product.find("img")
+    title_element = product.find("div", class_="title")
+    price_element = product.find("div", class_="price")
+
+    row_product = [
+        title_element.text.strip(),
+        link_element['href'],
+        image_element['src'],
+        format_price(price_element.text)
+    ]
+
+    print(row_product)
+    writer.writerow(row_product)
+
+f.close()
