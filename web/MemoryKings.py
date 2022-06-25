@@ -1,5 +1,5 @@
 from web.ScrapperInterface import ScrapperInterface
-import requests
+from utils.request import makeRequest
 from bs4 import BeautifulSoup
 import csv
 
@@ -32,7 +32,7 @@ class MemoryKings(ScrapperInterface):
         return product.find('a')['href']
 
     def fetchData(self):
-        page = requests.get(self.url)
+        page = makeRequest(self.url)
         soup = BeautifulSoup(page.content, "html.parser")
         return self.getProducts(self.getCatalog(soup))
 
